@@ -1,0 +1,10 @@
+Git Learning Notes
+
+Date: July 10, 2026
+
+Learning:
+- Git Clone
+- Git Status
+- Git Log
+- Git Branch
+- Git Remote
