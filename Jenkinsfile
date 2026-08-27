@@ -30,25 +30,25 @@ pipeline {
             }
         }
 
-       stage('Build') {
-    steps {
-        sh '''
-            echo "===== Build Stage ====="
-            cd client
-            npm run build
-        '''
-    }
-}
-
-
-   post {
-    success {
-        echo "===== CI PIPELINE SUCCESS ====="
-        archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
+        stage('Build') {
+            steps {
+                sh '''
+                    echo "===== Build Stage ====="
+                    cd client
+                    npm run build
+                '''
+            }
+        }
     }
 
-    failure {
-        echo "===== CI PIPELINE FAILED ====="
+    post {
+        success {
+            echo "===== CI PIPELINE SUCCESS ====="
+            archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
+        }
+
+        failure {
+            echo "===== CI PIPELINE FAILED ====="
+        }
     }
-}
 }
