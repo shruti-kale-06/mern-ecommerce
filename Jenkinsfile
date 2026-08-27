@@ -30,22 +30,21 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                sh '''
-                    echo "===== Build Stage ====="
-                    echo "Application build will be added here"
-                '''
-            }
-        }
-
+       stage('Build') {
+    steps {
+        sh '''
+            echo "===== Build Stage ====="
+            cd client
+            npm run build
+        '''
     }
+}
+
 
     post {
         success {
             echo '===== CI PIPELINE SUCCESS ====='
         }
-
         failure {
             echo '===== CI PIPELINE FAILED ====='
         }
