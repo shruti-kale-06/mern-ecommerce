@@ -41,12 +41,13 @@ pipeline {
 }
 
 
-    post {
-        success {
-            echo '===== CI PIPELINE SUCCESS ====='
-        }
-        failure {
-            echo '===== CI PIPELINE FAILED ====='
-        }
+   post {
+    success {
+        echo "===== CI PIPELINE SUCCESS ====="
+        archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
+    }
+
+    failure {
+        echo "===== CI PIPELINE FAILED ====="
     }
 }
