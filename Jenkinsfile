@@ -51,3 +51,4 @@ pipeline {
         echo "===== CI PIPELINE FAILED ====="
     }
 }
+}
