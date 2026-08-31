@@ -17,6 +17,7 @@ pipeline {
                     git --version
                     node --version
                     npm --version
+                    docker --version
                 '''
             }
         }
@@ -36,6 +37,15 @@ pipeline {
                     echo "===== Build Stage ====="
                     cd client
                     npm run build
+                '''
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    echo "===== Docker Build ====="
+                    docker build -t mern-ecommerce-server:${BUILD_NUMBER} ./server
                 '''
             }
         }
