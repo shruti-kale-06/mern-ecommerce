@@ -50,7 +50,37 @@ pipeline {
             }
         }
     }
+stage('Docker Run Test') {
+    steps {
+        sh '''
+            echo "===== Docker Run Test ====="
 
+            docker rm -f mern-server-ci-test 2>/dev/null || true
+
+            docker run -d \
+                --name mern-server-ci-test \
+                -p 3001:3000 \
+                --network mern-ecommerce_app-network \
+                -e PORT=3000 \
+                -e MONGO_URI=mongodb://mongo:27017/mern_ecommerce \
+                -e JWT_SECRET=ci-test-secret \
+                -e CLIENT_URL=http://localhost:8080 \
+                -e BASE_API_URL=api \
+                mern-ecommerce-server:${BUILD_NUMBER}
+
+            sleep 10
+
+            docker ps --filter "name=mern-server-ci-test"
+
+            docker logs mern-server-ci-test
+
+            docker inspect mern-server-ci-test \
+                --format '{{.State.Status}}'
+
+            docker rm -f mern-server-ci-test
+        '''
+    }
+}
     post {
         success {
             echo "===== CI PIPELINE SUCCESS ====="
