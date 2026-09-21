@@ -82,6 +82,37 @@ pipeline {
             }
         }
     }
+    stage('Docker Push') {
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub-credentials',
+                usernameVariable: 'DOCKERHUB_USERNAME',
+                passwordVariable: 'DOCKERHUB_TOKEN'
+            )
+        ]) {
+            sh '''
+                echo "===== Docker Push ====="
+
+                echo "$DOCKERHUB_TOKEN" | docker login \
+                    -u "$DOCKERHUB_USERNAME" \
+                    --password-stdin
+
+                docker tag mern-ecommerce-server:${BUILD_NUMBER} \
+                    ${DOCKERHUB_USERNAME}/mern-ecommerce-server:${BUILD_NUMBER}
+
+                docker tag mern-ecommerce-server:${BUILD_NUMBER} \
+                    ${DOCKERHUB_USERNAME}/mern-ecommerce-server:latest
+
+                docker push ${DOCKERHUB_USERNAME}/mern-ecommerce-server:${BUILD_NUMBER}
+
+                docker push ${DOCKERHUB_USERNAME}/mern-ecommerce-server:latest
+
+                docker logout
+            '''
+        }
+    }
+}
 
     post {
         success {
