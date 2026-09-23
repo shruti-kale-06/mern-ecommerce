@@ -1,10 +1,12 @@
 pipeline {
+
     agent any
 
     stages {
 
         stage('Checkout') {
             steps {
+                echo "===== Checkout ====="
                 checkout scm
             }
         }
@@ -25,7 +27,12 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    echo "===== Installing Dependencies ====="
+                    echo "===== Install Dependencies ====="
+
+                    cd client
+                    npm install
+
+                    cd ../server
                     npm install
                 '''
             }
@@ -34,7 +41,8 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                    echo "===== Build Stage ====="
+                    echo "===== Build ====="
+
                     cd client
                     npm run build
                 '''
@@ -45,7 +53,10 @@ pipeline {
             steps {
                 sh '''
                     echo "===== Docker Build ====="
-                    docker build -t mern-ecommerce-server:${BUILD_NUMBER} ./server
+
+                    docker build \
+                        -t mern-ecommerce-server:${BUILD_NUMBER} \
+                        ./server
                 '''
             }
         }
@@ -81,42 +92,49 @@ pipeline {
                 '''
             }
         }
-    }
-    stage('Docker Push') {
-    steps {
-        withCredentials([
-            usernamePassword(
-                credentialsId: 'dockerhub-credentials',
-                usernameVariable: 'DOCKERHUB_USERNAME',
-                passwordVariable: 'DOCKERHUB_TOKEN'
-            )
-        ]) {
-            sh '''
-                echo "===== Docker Push ====="
 
-                echo "$DOCKERHUB_TOKEN" | docker login \
-                    -u "$DOCKERHUB_USERNAME" \
-                    --password-stdin
+        stage('Docker Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKERHUB_USERNAME',
+                        passwordVariable: 'DOCKERHUB_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        echo "===== Docker Push ====="
 
-                docker tag mern-ecommerce-server:${BUILD_NUMBER} \
-                    ${DOCKERHUB_USERNAME}/mern-ecommerce-server:${BUILD_NUMBER}
+                        echo "$DOCKERHUB_TOKEN" | docker login \
+                            -u "$DOCKERHUB_USERNAME" \
+                            --password-stdin
 
-                docker tag mern-ecommerce-server:${BUILD_NUMBER} \
-                    ${DOCKERHUB_USERNAME}/mern-ecommerce-server:latest
+                        docker tag \
+                            mern-ecommerce-server:${BUILD_NUMBER} \
+                            ${DOCKERHUB_USERNAME}/mern-ecommerce-server:${BUILD_NUMBER}
 
-                docker push ${DOCKERHUB_USERNAME}/mern-ecommerce-server:${BUILD_NUMBER}
+                        docker tag \
+                            mern-ecommerce-server:${BUILD_NUMBER} \
+                            ${DOCKERHUB_USERNAME}/mern-ecommerce-server:latest
 
-                docker push ${DOCKERHUB_USERNAME}/mern-ecommerce-server:latest
+                        docker push \
+                            ${DOCKERHUB_USERNAME}/mern-ecommerce-server:${BUILD_NUMBER}
 
-                docker logout
-            '''
+                        docker push \
+                            ${DOCKERHUB_USERNAME}/mern-ecommerce-server:latest
+
+                        docker logout
+                    '''
+                }
+            }
         }
     }
-}
 
     post {
+
         success {
             echo "===== CI PIPELINE SUCCESS ====="
+
             archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
         }
 
